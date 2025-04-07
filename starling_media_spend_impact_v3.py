@@ -6,7 +6,7 @@ df = pd.read_excel('starling.xlsx', engine='openpyxl')
 
 # Streamlit app
 st.set_page_config(layout="wide")
-st.title('Media Spend Projection')
+st.title('Media Spend Impact Tool')
 
 # Sidebar for user inputs
 st.sidebar.header('User Input Parameters')
@@ -123,7 +123,7 @@ formatted_df = df[['Year', 'Media Spend', 'Upweight', 'Effectiveness Gain', 'Nat
 formatted_df.iloc[:,1:] = formatted_df.iloc[:,1:].applymap(lambda x: '{:,.0f}'.format(x))
 
 # Main panel for chart and projection table
-st.subheader('Incremental Impact of Media Over Time')
+st.subheader('Cumulative Impact of Media Over Time')
 st.line_chart(df[['Cumulative Total', 'Year']].set_index('Year'))
 
 st.subheader('Projection Table')
