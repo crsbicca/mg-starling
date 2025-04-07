@@ -1,14 +1,34 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 # Load the Excel file
 df = pd.read_excel('starling.xlsx', engine='openpyxl')
 
 # Streamlit app
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Media Spend Impact Tool", layout="wide")
+# Inject custom CSS to reduce padding above the title and change subtitle font size
+st.markdown(
+    """
+    <style>
+    .css-18e3th9 {
+        padding-top: 0rem;
+    }
+    .css-1d391kg {
+        padding-top: 0rem;
+    }
+    .css-1h6f3py {
+        font-size: 14px;  /* Change this value to your desired font size */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title('Media Spend Impact Tool')
 
 # Sidebar for user inputs
+st.sidebar.image('omni.png', width=200)  # Adjust the width as needed
 st.sidebar.header('User Input Parameters')
 
 # User input for Brand vs Performance allocation (default value 60% Brand Allocation)
@@ -20,7 +40,6 @@ budget_upweight = st.sidebar.slider('Budget Upweight (%)', 0, 500, 128) / 100
 
 # User input for Effectiveness
 effectiveness = st.sidebar.slider('Effectiveness (%)', 0, 500, 220) / 100
-
 
 # User input for Years (including 2024 as the first year)
 years = st.sidebar.text_area('Years (comma-separated)', '2024,2025-26,2026-27,2027-28,2028-29')
@@ -45,7 +64,6 @@ for year in years_list:
 
 df['Media Spend'] = media_spend_list
 
-
 # User input for Natural growth
 natural_growth = st.sidebar.slider('Natural Growth (%)', 0, 500, 105) / 100
 
@@ -57,8 +75,6 @@ media_contribution = st.sidebar.slider('Media Contribution (%)', 0, 100, 30) / 1
 
 # User input for LT media contribution (default value 30%)
 lt_media_contribution = st.sidebar.slider('LT Media Contribution (%)', 0, 100, 30) / 100
-
-
 
 # Calculations based on user inputs and formulas in the sheet
 df['Spend difference'] = df['Media Spend'].diff().fillna(0)
@@ -77,7 +93,6 @@ for i in range(1, len(df)):
     natural_growth_0_list.append(effectiveness_gain_list[i] * natural_growth)
 df['Effectiveness Gain'] = effectiveness_gain_list
 df['Natural Growth'] = natural_growth_0_list
-
 
 # Calculate Improvement
 improvement_list = [0]
@@ -124,7 +139,15 @@ formatted_df.iloc[:,1:] = formatted_df.iloc[:,1:].applymap(lambda x: '{:,.0f}'.f
 
 # Main panel for chart and projection table
 st.subheader('Cumulative Impact of Media Over Time')
-st.line_chart(df[['Cumulative Total', 'Year']].set_index('Year'))
+
+# Sort the DataFrame by Year in ascending order
+df = df.sort_values(by="Year")
+
+fig = px.line(df, x="Year", y="Cumulative Total", markers=True)
+fig.update_traces(line_color="#6935D3")  # Replace "blue" with your desired color
+fig.update_layout(xaxis_title="Year", yaxis_title="Cumulative Total", height =350, width=1500)
+st.plotly_chart(fig)
+
 
 st.subheader('Projection Table')
 st.dataframe(formatted_df, width=1500)
